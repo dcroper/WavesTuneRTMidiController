@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="u6375Q" name="WavesTuneRTMidiController" projectType="guiapp"
+              useAppConfig="1" addUsingNamespaceToJuceHeader="0" displaySplashScreen="0"
+              jucerFormatVersion="1" bundleIdentifier="ca.droper.WavesTuneRTMidiController"
+              companyWebsite="https://github.com/dcroper" version="0.1">
+  <MAINGROUP id="e4qurR" name="WavesTuneRTMidiController">
+    <GROUP id="{1D669544-9675-0540-DEB3-C77F962DF6B4}" name="Source">
+      <FILE id="IgMiXR" name="iconLarge.png" compile="0" resource="1" file="Source/iconLarge.png"/>
+      <GROUP id="{B30C818F-3BAF-08C4-1966-1A525861AAFB}" name="Constants">
+        <FILE id="cHTPFd" name="ScaleConstants.cpp" compile="1" resource="0"
+              file="Source/Constants/ScaleConstants.cpp"/>
+        <FILE id="jTuGk7" name="ScaleConstants.h" compile="0" resource="0"
+              file="Source/Constants/ScaleConstants.h"/>
+      </GROUP>
+      <GROUP id="{1B2E814E-CA7E-7103-7C9C-F14999924D5B}" name="Fonts">
+        <GROUP id="{592CAA35-1E80-3EBA-2C53-4E725637B574}" name="GothicA1">
+          <FILE id="snjpds" name="GothicA1-Black.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-Black.ttf"/>
+          <FILE id="k7i5D4" name="GothicA1-Bold.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-Bold.ttf"/>
+          <FILE id="qbhva5" name="GothicA1-ExtraBold.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-ExtraBold.ttf"/>
+          <FILE id="UXlWsO" name="GothicA1-ExtraLight.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-ExtraLight.ttf"/>
+          <FILE id="bRTgys" name="GothicA1-Light.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-Light.ttf"/>
+          <FILE id="c9JJ89" name="GothicA1-Medium.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-Medium.ttf"/>
+          <FILE id="hOFoo3" name="GothicA1-Regular.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-Regular.ttf"/>
+          <FILE id="pJaN4e" name="GothicA1-SemiBold.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-SemiBold.ttf"/>
+          <FILE id="iyxbOn" name="GothicA1-Thin.ttf" compile="0" resource="1"
+                file="Source/Fonts/GothicA1/GothicA1-Thin.ttf"/>
+        </GROUP>
+        <FILE id="uBmhyK" name="Fonts.cpp" compile="1" resource="0" file="Source/Fonts/Fonts.cpp"/>
+        <FILE id="WMoBlN" name="Fonts.h" compile="0" resource="0" file="Source/Fonts/Fonts.h"/>
+      </GROUP>
+      <GROUP id="{CE08373E-F72C-3A04-5961-A2B4AD02EECE}" name="Managers">
+        <FILE id="paJoYg" name="MidiKeyboardManager.cpp" compile="1" resource="0"
+              file="Source/Managers/MidiKeyboardManager.cpp"/>
+        <FILE id="WnFq8s" name="MidiKeyboardManager.h" compile="0" resource="0"
+              file="Source/Managers/MidiKeyboardManager.h"/>
+        <FILE id="Coh6h8" name="MidiOutputManager.cpp" compile="1" resource="0"
+              file="Source/Managers/MidiOutputManager.cpp"/>
+        <FILE id="V9XPzk" name="MidiOutputManager.h" compile="0" resource="0"
+              file="Source/Managers/MidiOutputManager.h"/>
+      </GROUP>
+      <GROUP id="{52AACF5E-CDAD-C1E1-2BB4-874ADDF5AE87}" name="Components">
+        <FILE id="OdcWb7" name="ScaleSelector.cpp" compile="1" resource="0"
+              file="Source/Components/ScaleSelector.cpp"/>
+        <FILE id="EH9XCv" name="ScaleSelector.h" compile="0" resource="0" file="Source/Components/ScaleSelector.h"/>
+        <FILE id="g2Eje2" name="MainComponent.cpp" compile="1" resource="0"
+              file="Source/Components/MainComponent.cpp"/>
+        <FILE id="mudfQW" name="MainComponent.h" compile="0" resource="0" file="Source/Components/MainComponent.h"/>
+        <FILE id="GTpTve" name="MidiSourceSelectComponent.cpp" compile="1"
+              resource="0" file="Source/Components/MidiSourceSelectComponent.cpp"/>
+        <FILE id="CJwwiX" name="MidiSourceSelectComponent.h" compile="0" resource="0"
+              file="Source/Components/MidiSourceSelectComponent.h"/>
+        <FILE id="RHJ2xp" name="ToggleButtonGroup.cpp" compile="1" resource="0"
+              file="Source/Components/ToggleButtonGroup.cpp"/>
+        <FILE id="ZAalWF" name="ToggleButtonGroup.h" compile="0" resource="0"
+              file="Source/Components/ToggleButtonGroup.h"/>
+        <FILE id="sSHbFC" name="ToggleButtonGroupLookAndFeel.h" compile="0"
+              resource="0" file="Source/Components/ToggleButtonGroupLookAndFeel.h"/>
+      </GROUP>
+      <FILE id="GGV0cU" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
+  <EXPORTFORMATS>
+    <VS2022 targetFolder="Builds/VisualStudio2022" bigIcon="IgMiXR">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="WavesTuneRTMidiController"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="WavesTuneRTMidiController"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../libraries/juce-7.0.5/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="CustomModules"/>
+        <MODULEPATH id="juce_audio_utils" path="../libraries/juce-7.0.5/JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2022>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="1" useGlobalPath="1"/>
+  </MODULES>
+</JUCERPROJECT>
