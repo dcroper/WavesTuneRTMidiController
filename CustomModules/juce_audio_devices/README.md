@@ -1,0 +1,4 @@
+# juce_audio_devices_teVirtualMIDI
+ An update to the juce_audio_devices module to support the creation of virtual MIDI devices on Windows using the [teVirtualMIDI driver](https://www.tobias-erichsen.de/software/virtualmidi.html).
+
+This module does not include the driver itself in order to comply with the license of the driver. For the creation of new virtual MIDI devices to work the teVirtualMIDI driver and dll must already be installed on the system running the application. The driver is currently not available for standalone installation but can be installed as part of either [rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html) or [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html). If the `teVirtualMIDI.dll` is not present on the system at runtime then the `createNewDevice` methods will fail silently by returning an empty `std::unique_ptr<>`.
