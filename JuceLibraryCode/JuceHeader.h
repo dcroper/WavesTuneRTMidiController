@@ -43,7 +43,7 @@ namespace ProjectInfo
 {
     const char* const  projectName    = "WavesTuneRTMidiController";
     const char* const  companyName    = "";
-    const char* const  versionString  = "0.1";
+    const char* const  versionString  = "0.1.0";
     const int          versionNumber  = 0x100;
 }
 #endif

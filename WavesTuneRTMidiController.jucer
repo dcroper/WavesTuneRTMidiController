@@ -3,7 +3,7 @@
 <JUCERPROJECT id="u6375Q" name="WavesTuneRTMidiController" projectType="guiapp"
               useAppConfig="1" addUsingNamespaceToJuceHeader="0" displaySplashScreen="0"
               jucerFormatVersion="1" bundleIdentifier="ca.droper.WavesTuneRTMidiController"
-              companyWebsite="https://github.com/dcroper" version="0.1">
+              companyWebsite="https://github.com/dcroper" version="0.1.0">
   <MAINGROUP id="e4qurR" name="WavesTuneRTMidiController">
     <GROUP id="{1D669544-9675-0540-DEB3-C77F962DF6B4}" name="Source">
       <FILE id="IgMiXR" name="iconLarge.png" compile="0" resource="1" file="Source/iconLarge.png"/>
