@@ -131,12 +131,12 @@ void ToggleButtonGroup::onClick(int buttonId, bool sendChange)
     if (deselectable && prevEnabledButtonId == buttonId)
     {
         enabledButtonId = 0;
-        buttonList[buttonId - 1]->setToggleState(false, false);
+        buttonList[buttonId - 1]->setToggleState(false, juce::dontSendNotification);
     }
     else
     {
         enabledButtonId = buttonId;
-        buttonList[buttonId - 1]->setToggleState(true, false);
+        buttonList[buttonId - 1]->setToggleState(true, juce::dontSendNotification);
     }
     
     if (prevEnabledButtonId != enabledButtonId)

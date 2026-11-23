@@ -34,7 +34,7 @@ public:
     std::unique_ptr<juce::MidiDeviceInfo> getSelectedDevice() const;
     void setSelectedDevice(const juce::MidiDeviceInfo& device, juce::NotificationType notification = juce::sendNotificationAsync);
 
-    void addMidiDevices(juce::Array<juce::MidiDeviceInfo>& devices);
+    void addMidiDevices(const juce::Array<juce::MidiDeviceInfo>& devices);
 
     void setLabelText(juce::StringRef text);
 

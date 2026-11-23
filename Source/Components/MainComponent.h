@@ -24,7 +24,7 @@
 
 #include <JuceHeader.h>
 #include "ScaleSelector.h"
-#include "MIDISourceSelectComponent.h"
+#include "MidiSourceSelectComponent.h"
 #include "../Managers/MidiOutputManager.h"
 #include "../Managers/MidiKeyboardManager.h"
 

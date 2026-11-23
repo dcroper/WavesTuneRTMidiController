@@ -108,7 +108,7 @@ void MidiOutputManager::sendScaleType(const Scale::Type& scaleType)
     if (!midiOutput) return;
 
     static const float midiValPerType = static_cast<float>(MIDI_MAX_VALUE) / SCALE_TYPE_MAX;
-    int midiValue = midiValPerType * scaleType;
+    int midiValue = midiValPerType * static_cast<int>(scaleType);
 
     juce::MidiBuffer midiBuffer;
 

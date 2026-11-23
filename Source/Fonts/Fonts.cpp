@@ -24,7 +24,7 @@
 
 const juce::Font& getGothicA1()
 {
-    static juce::Font gothicA1(juce::Font(juce::Typeface::createSystemTypefaceFor(BinaryData::GothicA1ExtraBold_ttf,
+    static juce::Font gothicA1(juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::GothicA1ExtraBold_ttf,
         BinaryData::GothicA1ExtraBold_ttfSize)));
     return gothicA1;
 }

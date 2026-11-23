@@ -55,12 +55,12 @@ void MidiSourceSelectComponent::setSelectedDevice(const juce::MidiDeviceInfo& de
     deviceSelector.setSelectedId(id, notification);
 }
 
-void MidiSourceSelectComponent::addMidiDevices(juce::Array<juce::MidiDeviceInfo>& devices)
+void MidiSourceSelectComponent::addMidiDevices(const juce::Array<juce::MidiDeviceInfo>& devices)
 {
     midiDevices.addArray(devices);
 
     juce::StringArray selectorItems;
-    for (auto& device : devices)
+    for (const auto& device : devices)
     {
         selectorItems.add(device.name);
     }

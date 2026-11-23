@@ -13,11 +13,52 @@ This application's UI mirrors the `Scale` section of "Waves Tune Real-Time" (v14
 Additionally, you can select a MIDI keyboard and use the keyboard notes to control the `Scale Root` value. Pressing a note on the MIDI keyboard will set the `Scale Root` to corresponding value for the note played regardless of octive. You cannot control the `Scale Type` value with the MIDI keyboard.
 
 ## Virtual MIDI Output Device
-This program creates a virtual MIDI device to allow direct communication with a DAW running on the same machine. To use this virtual MIDI device, `WavesTuneRTVirtualMIDI` must be selected as the MIDI Output. If running on Windows, the [teVirtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html) driver must also be installed prior to running the application. You can install the driver by downloading and installing either [rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html) or [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html) from the developer's website.
+This program creates a virtual MIDI device to allow direct communication with a DAW running on the same machine. To use this virtual MIDI device, `WavesTuneRTVirtualMIDI` must be selected as the MIDI Output.
+
+- **macOS:** the virtual device is created with CoreMIDI. Nothing extra needs to be installed.
+- **Windows:** the virtual device is created with the [teVirtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html) driver, using the [juce-tevirtualmidi](https://github.com/dcroper/juce-tevirtualmidi) patch to JUCE. The driver must be installed first (see below). Without it, the virtual device can't be created, but you can still choose any other MIDI output.
+
+## Installing
+
+### macOS
+1. Copy `WavesTuneRTMidiController.app` into `/Applications`.
+1. The app is not notarized. The first time you open it, right-click the app and choose **Open**, then confirm. If macOS still blocks it, go to **System Settings > Privacy & Security** and click **Open Anyway**.
+
+The app requires macOS 12 or later and runs natively on both Apple silicon and Intel Macs.
+
+### Windows
+1. Install the teVirtualMIDI driver by installing either [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html) or [rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html). You don't need to create any ports in them.
+1. Copy `WavesTuneRTMidiController.exe` anywhere you like and run it.
+1. In your DAW, enable `WavesTuneRTVirtualMIDI` as a MIDI input.
+
+## Building
+The project uses [CMake](https://cmake.org) 3.22 or later and [JUCE](https://github.com/juce-framework/JUCE) 9.0.6. CMake downloads JUCE and the [juce-tevirtualmidi](https://github.com/dcroper/juce-tevirtualmidi) patch, and applies the patch, the first time you configure. This needs git and an internet connection.
+
+### macOS
+Requires Xcode and CMake (for example `brew install cmake`). Build a universal (Apple silicon + Intel) Release app:
+```
+cmake -B build -G Xcode
+cmake --build build --config Release
+```
+The app is written to `build/WavesTuneRTMidiController_artefacts/Release/WavesTuneRTMidiController.app`. Open `build/WavesTuneRTMidiController.xcodeproj` to work in Xcode.
+
+### Windows
+Requires Visual Studio 2022 with the **Desktop development with C++** workload, which includes CMake. From a **Developer PowerShell for VS 2022**:
+```
+cmake -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release
+```
+The app is written to `build\WavesTuneRTMidiController_artefacts\Release\WavesTuneRTMidiController.exe`. Open `build\WavesTuneRTMidiController.sln` to work in Visual Studio. You can also open the folder directly in Visual Studio, which reads `CMakeLists.txt` itself.
+
+### Working on the patch
+To build against a local copy of juce-tevirtualmidi instead of the one on GitHub, start from an empty `build` folder and run:
+```
+cmake -B build -DFETCHCONTENT_SOURCE_DIR_JUCE_TEVIRTUALMIDI=../juce-tevirtualmidi
+```
 
 ## License
 WavesTuneRTMidiController is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPLv3).
 
 This application uses the [JUCE Framework](https://juce.com), whose modules are used here under the terms of the [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html). JUCE is also available under a commercial licence from Raw Material Software Limited.
 
-The Windows virtual MIDI code in `CustomModules/juce_audio_devices/native/juce_win32_teVirtualMIDI.cpp` is provided under the ISC license.
+The [juce-tevirtualmidi](https://github.com/dcroper/juce-tevirtualmidi) patch adds a file to JUCE that is provided under the ISC license.
