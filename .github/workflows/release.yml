@@ -1,0 +1,87 @@
+# Builds the macOS and Windows apps with the Build workflow and attaches the
+# zips to a GitHub release.
+#
+# Runs when a release is published. It can also be run by hand from the
+# Actions tab to rebuild the files for an existing release.
+#
+# The apps are not code-signed. See the README for how users open them.
+
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to build and upload to (for example v0.2.0)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  check-version:
+    name: Check tag matches VERSION
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+    steps:
+      - name: Check out the release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+
+      # The tag must be v<VERSION>, optionally followed by a pre-release
+      # suffix: VERSION 1.2.0 allows v1.2.0, v1.2.0-beta1 or v1.2.0-rc.2.
+      - name: Compare
+        run: |
+          version=$(sed -nE 's/^project\(WavesTuneRTMidiController VERSION ([0-9.]+).*/\1/p' CMakeLists.txt)
+
+          if [ -z "$version" ]; then
+            echo "::error file=CMakeLists.txt::Couldn't find VERSION in the project() line"
+            exit 1
+          fi
+
+          case "$TAG" in
+            "v$version" | "v$version"-*)
+              echo "Tag $TAG matches VERSION $version" ;;
+            *)
+              echo "::error file=CMakeLists.txt::Release tag $TAG doesn't match VERSION $version in CMakeLists.txt. Expected v$version (optionally with a suffix such as -beta1)."
+              exit 1 ;;
+          esac
+
+  build:
+    needs: check-version
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ github.event.release.tag_name || inputs.tag }}
+      label: ${{ github.event.release.tag_name || inputs.tag }}
+
+  upload:
+    name: Upload to the release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to upload files to the release
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+    steps:
+      - name: Download the zips
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Find the zips wherever download-artifact put them
+          find dist -type f -name '*.zip' -print0 | xargs -0 gh release upload "$TAG" --clobber --repo "$GITHUB_REPOSITORY"

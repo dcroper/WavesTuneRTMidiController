@@ -19,42 +19,32 @@ This program creates a virtual MIDI device to allow direct communication with a 
 - **Windows:** the virtual device is created with the [teVirtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html) driver, using the [juce-tevirtualmidi](https://github.com/dcroper/juce-tevirtualmidi) patch to JUCE. The driver must be installed first (see below). Without it, the virtual device can't be created, but you can still choose any other MIDI output.
 
 ## Installing
+Download the zip for your platform from the [Releases](https://github.com/dcroper/WavesTuneRTMidiController/releases) page.
+
+The apps are not code-signed, so macOS and Windows warn the first time you open a new version. The steps below get past the warning. You only need to do this once per version.
 
 ### macOS
-1. Copy `WavesTuneRTMidiController.app` into `/Applications`.
-1. The app is not notarized. The first time you open it, right-click the app and choose **Open**, then confirm. If macOS still blocks it, go to **System Settings > Privacy & Security** and click **Open Anyway**.
+These steps are for macOS 15 Sequoia and later. The app runs natively on both Apple silicon and Intel Macs.
 
-The app requires macOS 12 or later and runs natively on both Apple silicon and Intel Macs.
+1. Double-click `WavesTuneRTMidiController-<version>-macOS.zip` to unzip it.
+1. Drag `WavesTuneRTMidiController.app` into your **Applications** folder.
+1. Open the app. macOS says it can't verify the app. Click **Done**.
+1. Open **System Settings > Privacy & Security**, scroll down to **Security**, and click **Open Anyway** next to the message about WavesTuneRTMidiController.
+1. Click **Open Anyway** again and enter your password. The app opens, and later launches work normally.
+
+Alternatively, instead of steps 3 to 5, run this in Terminal once after copying the app:
+```
+xattr -dr com.apple.quarantine /Applications/WavesTuneRTMidiController.app
+```
 
 ### Windows
 1. Install the teVirtualMIDI driver by installing either [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html) or [rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html). You don't need to create any ports in them.
-1. Copy `WavesTuneRTMidiController.exe` anywhere you like and run it.
+1. Right-click `WavesTuneRTMidiController-<version>-Windows-x64.zip`, choose **Extract All**, and move `WavesTuneRTMidiController.exe` anywhere you like.
+1. Run it. If Windows shows **Windows protected your PC**, click **More info**, then **Run anyway**.
 1. In your DAW, enable `WavesTuneRTVirtualMIDI` as a MIDI input.
 
 ## Building
-The project uses [CMake](https://cmake.org) 3.22 or later and [JUCE](https://github.com/juce-framework/JUCE) 9.0.6. CMake downloads JUCE and the [juce-tevirtualmidi](https://github.com/dcroper/juce-tevirtualmidi) patch, and applies the patch, the first time you configure. This needs git and an internet connection.
-
-### macOS
-Requires Xcode and CMake (for example `brew install cmake`). Build a universal (Apple silicon + Intel) Release app:
-```
-cmake -B build -G Xcode
-cmake --build build --config Release
-```
-The app is written to `build/WavesTuneRTMidiController_artefacts/Release/WavesTuneRTMidiController.app`. Open `build/WavesTuneRTMidiController.xcodeproj` to work in Xcode.
-
-### Windows
-Requires Visual Studio 2022 with the **Desktop development with C++** workload, which includes CMake. From a **Developer PowerShell for VS 2022**:
-```
-cmake -B build -G "Visual Studio 17 2022" -A x64
-cmake --build build --config Release
-```
-The app is written to `build\WavesTuneRTMidiController_artefacts\Release\WavesTuneRTMidiController.exe`. Open `build\WavesTuneRTMidiController.sln` to work in Visual Studio. You can also open the folder directly in Visual Studio, which reads `CMakeLists.txt` itself.
-
-### Working on the patch
-To build against a local copy of juce-tevirtualmidi instead of the one on GitHub, start from an empty `build` folder and run:
-```
-cmake -B build -DFETCHCONTENT_SOURCE_DIR_JUCE_TEVIRTUALMIDI=../juce-tevirtualmidi
-```
+To build the app yourself, or to publish a release, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 WavesTuneRTMidiController is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPLv3).

@@ -1,0 +1,123 @@
+# Builds the macOS and Windows apps and saves the zips as workflow artifacts.
+#
+# It runs in these cases:
+# - By hand from the Actions tab, on a branch you pick.
+# - When the "build" label is added to a pull request, and again on every new
+#   push to a pull request that has the label. Only people with triage access
+#   or higher can add labels. Remove the label to stop the automatic builds.
+# - When the Release workflow calls it, so releases ship the same build.
+#
+# Download the zips from the Artifacts section of the run's page.
+
+name: Build
+
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      label:
+        description: "Text used in the zip names (defaults to the branch name)"
+        required: false
+  workflow_call:
+    inputs:
+      ref:
+        description: "Branch, tag or commit to build"
+        type: string
+        required: true
+      label:
+        description: "Text used in the zip names"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+# A new push to a pull request cancels its build that's still running
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    # Pull requests: build when the "build" label is added, or on a new push
+    # (or reopen) of a pull request that already has it. Adding any other
+    # label doesn't rebuild.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'build') ||
+      (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'build'))
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-latest
+          - name: Windows
+            os: windows-latest
+
+    env:
+      # Pull requests: "pr-<number>". Otherwise the given label or the branch name.
+      LABEL: ${{ inputs.label || (github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number)) || github.ref_name }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      #-------------------------------------------------------------------------
+      # macOS: universal (Apple silicon + Intel) app
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: cmake -B build -G Xcode
+
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        run: cmake --build build --config Release
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          app="build/WavesTuneRTMidiController_artefacts/Release/WavesTuneRTMidiController.app"
+          lipo -archs "$app/Contents/MacOS/WavesTuneRTMidiController"
+          # Branch names can contain '/', which isn't allowed in file names
+          zip="WavesTuneRTMidiController-${LABEL//\//-}-macOS.zip"
+          # ditto keeps the app's signature intact; a plain zip can break it
+          ditto -c -k --keepParent "$app" "$zip"
+          echo "ASSET=$zip" >> "$GITHUB_ENV"
+
+      #-------------------------------------------------------------------------
+      # Windows: 64-bit app, built with the newest Visual Studio on the runner
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -B build -A x64
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: cmake --build build --config Release
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = "build/WavesTuneRTMidiController_artefacts/Release/WavesTuneRTMidiController.exe"
+          $label = $env:LABEL -replace '/', '-'
+          $zip = "WavesTuneRTMidiController-$label-Windows-x64.zip"
+          Compress-Archive -Path $exe -DestinationPath $zip
+          "ASSET=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      #-------------------------------------------------------------------------
+
+      # archive: false uploads the zip as-is, so downloading it doesn't give a
+      # zip inside a zip. The artifact is named after the file.
+      - name: Save the zip
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          path: ${{ env.ASSET }}
+          archive: false
+          if-no-files-found: error
