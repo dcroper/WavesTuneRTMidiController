@@ -1,12 +1,12 @@
 # WavesTuneRTMidiController
-This application was created to simultaniously control the `Scale Root` and `Scale Type` parameters of multiple instances of the "Waves Tune Real-Time" plugin within [Studio One 6](https://www.presonus.com/products/Studio-One/new-in-studio-one-6). The plugins can be controlled using the user interface as well as an external MIDI keyboard. Even though Studio One was the DAW targetted when making this application, it could still work with other DAWs that support plugin parameter control via MIDI.
+This application was created to simultaneously control the `Scale Root` and `Scale Type` parameters of multiple instances of the "Waves Tune Real-Time" plugin within [Fender Studio Pro](https://www.fender.com/products/fender-studio-pro) (formerly PreSonus Studio One). The plugins can be controlled using the user interface as well as an external MIDI keyboard. Even though Fender Studio Pro was the DAW targeted when making this application, it could still work with other DAWs that support plugin parameter control via MIDI.
 
-Studio One 6 has the following limitations that necessitated the need for this application:
+Fender Studio Pro has the following limitations that necessitated the need for this application:
 1. No support for grouping multiple plugin parameters together across tracks such that they can all be controlled together.
 1. Cannot globally connect multiple plugin parameters to the same MIDI control such that changing the MIDI control changes all of the parameters associated with it.
 1. Cannot use MIDI notes to update plugin parameters.
 
-This application's UI mirrors the `Scale` section of "Waves Tune Real-Time" (v14) plugin and allows you to control up 6 instances of the plugin by outputing 6 copies of the MIDI control value for both the `Scale Root` and `Scale Type` that is selected. These MIDI controls can then be assigned to the `Scale Root` and `Scale Type` parameters of the various plugin instances within Studio One.
+This application's UI mirrors the `Scale` section of "Waves Tune Real-Time" (v14) plugin and allows you to control up 6 instances of the plugin by outputting 6 copies of the MIDI control value for both the `Scale Root` and `Scale Type` that is selected. These MIDI controls can then be assigned to the `Scale Root` and `Scale Type` parameters of the various plugin instances within Fender Studio Pro.
 
 ![Screenshot](screenshot.png)
 
