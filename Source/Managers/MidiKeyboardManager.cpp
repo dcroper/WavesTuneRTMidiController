@@ -50,8 +50,8 @@ void MidiKeyboardManager::setMidiInput(const juce::MidiDeviceInfo* const deviceI
     }
 }
 
-MidiKeyboardManager::MidiListener::MidiListener(MidiKeyboardManager* manager)
-  : manager(manager)
+MidiKeyboardManager::MidiListener::MidiListener(MidiKeyboardManager* owner)
+  : manager(owner)
 {
 }
 
@@ -59,7 +59,7 @@ MidiKeyboardManager::MidiListener::~MidiListener()
 {
 }
 
-void MidiKeyboardManager::MidiListener::handleIncomingMidiMessage(juce::MidiInput* source, const juce::MidiMessage& message)
+void MidiKeyboardManager::MidiListener::handleIncomingMidiMessage(juce::MidiInput*, const juce::MidiMessage& message)
 {
     if (message.isNoteOn())
     {

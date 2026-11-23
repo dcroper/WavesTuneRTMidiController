@@ -37,12 +37,12 @@ static const int SCALE_TYPE_MAX = 43;
 static const int MIDI_MAX_VALUE = 127;
 
 MidiOutputManager::MidiOutputManager()
-  : scaleTypeChannel(DEFAULT_SCALE_TYPE_CHANNEL),
-    scaleTypeCCStart(DEFAULT_CC_START),
-    scaleTypeCCRange(DEFAULT_RANGE),
-    scaleRootChannel(DEFAULT_SCALE_ROOT_CHANNEL),
+  : scaleRootChannel(DEFAULT_SCALE_ROOT_CHANNEL),
     scaleRootCCStart(DEFAULT_CC_START),
-    scaleRootCCRange(DEFAULT_RANGE)
+    scaleRootCCRange(DEFAULT_RANGE),
+    scaleTypeChannel(DEFAULT_SCALE_TYPE_CHANNEL),
+    scaleTypeCCStart(DEFAULT_CC_START),
+    scaleTypeCCRange(DEFAULT_RANGE)
 {
 }
 
@@ -91,7 +91,8 @@ void MidiOutputManager::sendScaleRoot(const ScaleRoot::Letter& scaleRootLetter, 
     if (!midiOutput) return;
 
     static const float midiValPerScale = static_cast<float>(MIDI_MAX_VALUE) / SCALE_ROOT_MAX;
-    int midiValue = midiValPerScale * SCALE_ROOT_MIDI_LOOKUP[scaleRootLetter + (7 * scaleRootSign)];
+    // Truncation is intended: Waves expects the value rounded down
+    int midiValue = static_cast<int>(midiValPerScale * static_cast<float>(SCALE_ROOT_MIDI_LOOKUP[scaleRootLetter + (7 * scaleRootSign)]));
 
     juce::MidiBuffer midiBuffer;
 
@@ -108,7 +109,8 @@ void MidiOutputManager::sendScaleType(const Scale::Type& scaleType)
     if (!midiOutput) return;
 
     static const float midiValPerType = static_cast<float>(MIDI_MAX_VALUE) / SCALE_TYPE_MAX;
-    int midiValue = midiValPerType * static_cast<int>(scaleType);
+    // Truncation is intended: Waves expects the value rounded down
+    int midiValue = static_cast<int>(midiValPerType * static_cast<float>(scaleType));
 
     juce::MidiBuffer midiBuffer;
 

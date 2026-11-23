@@ -35,12 +35,12 @@ public:
 
     ~ToggleButtonGroupLookAndFeel() override {}
 
-    juce::Font getTextButtonFont(juce::TextButton& button, int buttonHeight) override
+    juce::Font getTextButtonFont(juce::TextButton&, int buttonHeight) override
     {
         return getGothicA1().withHeight(juce::jmin(40.0f, (float)buttonHeight * 0.6f));
     }
 
 private:
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ToggleButtonGroupLookAndFeel);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ToggleButtonGroupLookAndFeel)
 };

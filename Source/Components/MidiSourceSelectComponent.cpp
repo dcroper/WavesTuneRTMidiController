@@ -73,7 +73,7 @@ void MidiSourceSelectComponent::setLabelText(juce::StringRef text)
     deviceSelectorLabel.setText(text, juce::sendNotification);
 }
 
-void MidiSourceSelectComponent::paint(juce::Graphics& g)
+void MidiSourceSelectComponent::paint(juce::Graphics&)
 {
 }
 

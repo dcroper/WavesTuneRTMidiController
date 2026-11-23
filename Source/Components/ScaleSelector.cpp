@@ -65,8 +65,11 @@ Scale ScaleSelector::getScale() const
 
 void ScaleSelector::setScaleRoot(const ScaleRoot& scaleRoot)
 {
+    // Update both button groups without notifications, then notify once so
+    // listeners never see a half-updated scale root.
     scaleRootSignButtons.setSelectedId(scaleRoot.sign, false);
     scaleRootLetterButtons.setSelectedId(scaleRoot.letter, false);
+    updateEnabledScaleRootButtons();
     onScaleRootChangeHelper();
 }
 

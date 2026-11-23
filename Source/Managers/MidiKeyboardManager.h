@@ -40,8 +40,8 @@ private:
     class MidiListener : public juce::MidiInputCallback
     {
     public:
-        MidiListener(MidiKeyboardManager* manager);
-        ~MidiListener();
+        MidiListener(MidiKeyboardManager* owner);
+        ~MidiListener() override;
         void handleIncomingMidiMessage(juce::MidiInput* source, const juce::MidiMessage& message) override;
 
     private:

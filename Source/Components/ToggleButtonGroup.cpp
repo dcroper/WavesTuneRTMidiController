@@ -24,8 +24,8 @@
 
 //==============================================================================
 ToggleButtonGroup::ToggleButtonGroup()
-  : deselectable(false),
-    enabledButtonId(0)
+  : enabledButtonId(0),
+    deselectable(false)
 {
 }
 
@@ -80,7 +80,7 @@ int ToggleButtonGroup::getNumButtons() const
     return buttonList.size();
 }
 
-void ToggleButtonGroup::paint (juce::Graphics& g)
+void ToggleButtonGroup::paint (juce::Graphics&)
 {
 }
 
@@ -139,7 +139,7 @@ void ToggleButtonGroup::onClick(int buttonId, bool sendChange)
         buttonList[buttonId - 1]->setToggleState(true, juce::dontSendNotification);
     }
     
-    if (prevEnabledButtonId != enabledButtonId)
+    if (sendChange && prevEnabledButtonId != enabledButtonId)
     {
         if (onChange)
         {
