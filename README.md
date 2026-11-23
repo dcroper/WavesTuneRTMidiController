@@ -14,3 +14,10 @@ Additionally, you can select a MIDI keyboard and use the keyboard notes to contr
 
 ## Virtual MIDI Output Device
 This program creates a virtual MIDI device to allow direct communication with a DAW running on the same machine. To use this virtual MIDI device, `WavesTuneRTVirtualMIDI` must be selected as the MIDI Output. If running on Windows, the [teVirtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html) driver must also be installed prior to running the application. You can install the driver by downloading and installing either [rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html) or [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html) from the developer's website.
+
+## License
+WavesTuneRTMidiController is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPLv3).
+
+This application uses the [JUCE Framework](https://juce.com), whose modules are used here under the terms of the [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html). JUCE is also available under a commercial licence from Raw Material Software Limited.
+
+The Windows virtual MIDI code in `CustomModules/juce_audio_devices/native/juce_win32_teVirtualMIDI.cpp` is provided under the ISC license.
