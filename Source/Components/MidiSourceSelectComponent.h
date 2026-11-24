@@ -34,7 +34,15 @@ public:
     std::unique_ptr<juce::MidiDeviceInfo> getSelectedDevice() const;
     void setSelectedDevice(const juce::MidiDeviceInfo& device, juce::NotificationType notification = juce::sendNotificationAsync);
 
+    // Adds a "None" choice at the top, so a device can be unselected.
+    // Call before addMidiDevices().
+    void addNoneItem();
+
     void addMidiDevices(const juce::Array<juce::MidiDeviceInfo>& devices);
+
+    // Greys out a device so it can't be picked, shows displayText instead of
+    // its name, and clears the selection if it was selected.
+    void setDeviceUnavailable(const juce::MidiDeviceInfo& device, const juce::String& displayText);
 
     void setLabelText(juce::StringRef text);
 
@@ -44,6 +52,12 @@ public:
     std::function<void()> onChange;
 
 private:
+
+    // Item 1 is reserved for "None" (see addNoneItem); devices start at item 2
+    static constexpr int noneItemId = 1;
+    static constexpr int firstDeviceItemId = 2;
+
+    bool hasNoneItem = false;
 
     juce::ComboBox deviceSelector;
     juce::Label deviceSelectorLabel;

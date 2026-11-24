@@ -32,6 +32,7 @@ public:
     ~MidiOutputManager();
 
     void setMidiOutput(const juce::MidiDeviceInfo* const deviceInfo);
+    bool hasMidiOutput() const { return midiOutput != nullptr; }
 
     void sendScale(const Scale& scale);
 

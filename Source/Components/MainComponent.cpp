@@ -26,21 +26,45 @@
 //==============================================================================
 static const juce::MidiDeviceInfo VIRTUAL_MIDI_OUTPUT_DEVICE("WavesTuneRTVirtualMIDI", "");
 
+#if JUCE_WINDOWS
+ // Windows needs the teVirtualMIDI driver, which comes with loopMIDI
+ static const juce::String VIRTUAL_MIDI_UNAVAILABLE_TEXT("WavesTuneRTVirtualMIDI (install loopMIDI to enable)");
+#else
+ static const juce::String VIRTUAL_MIDI_UNAVAILABLE_TEXT("WavesTuneRTVirtualMIDI (unavailable)");
+#endif
+
 MainComponent::MainComponent()
 {
     addAndMakeVisible(midiKeyboardSelect);
     midiKeyboardSelect.setLabelText("MIDI Keyboard:");
+    midiKeyboardSelect.addNoneItem();
     midiKeyboardSelect.addMidiDevices(juce::MidiInput::getAvailableDevices());
     midiKeyboardSelect.onChange = [this] { midiKeyboardManager.setMidiInput(midiKeyboardSelect.getSelectedDevice().get()); };
+
+    // Open the virtual output first, to find out whether it can be created
+    midiOutputManager.setMidiOutput(&VIRTUAL_MIDI_OUTPUT_DEVICE);
+    const bool virtualOutputAvailable = midiOutputManager.hasMidiOutput();
 
     addAndMakeVisible(midiOutputSelect);
     midiOutputSelect.setLabelText("MIDI Output:");
     juce::Array<juce::MidiDeviceInfo> midiOutputDevices;
     midiOutputDevices.add(VIRTUAL_MIDI_OUTPUT_DEVICE);
     midiOutputDevices.addArray(juce::MidiOutput::getAvailableDevices());
-    midiOutputSelect.addMidiDevices(midiOutputDevices);
+
+    if (virtualOutputAvailable)
+    {
+        midiOutputSelect.addMidiDevices(midiOutputDevices);
+        midiOutputSelect.setSelectedDevice(VIRTUAL_MIDI_OUTPUT_DEVICE, juce::dontSendNotification);
+    }
+    else
+    {
+        // Default to None, and grey out the virtual output with a hint
+        midiOutputSelect.addNoneItem();
+        midiOutputSelect.addMidiDevices(midiOutputDevices);
+        midiOutputSelect.setDeviceUnavailable(VIRTUAL_MIDI_OUTPUT_DEVICE, VIRTUAL_MIDI_UNAVAILABLE_TEXT);
+    }
+
     midiOutputSelect.onChange = [this] { updateMidiOutput(); };
-    midiOutputSelect.setSelectedDevice(VIRTUAL_MIDI_OUTPUT_DEVICE, juce::dontSendNotification);
     
     addAndMakeVisible(scaleSelector);
     scaleSelector.onScaleTypeChange = [this] { updateScale(); };
@@ -48,7 +72,8 @@ MainComponent::MainComponent()
 
     midiKeyboardManager.onScaleChange = [this](ScaleRoot scaleRoot) { scaleSelector.setScaleRoot(scaleRoot); };
 
-    updateMidiOutput();
+    // The output is already open (or None), so just send the starting scale
+    updateScale();
 
     // Make sure you set the size of the component after
     // you add any child components.
