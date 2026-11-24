@@ -1,45 +1,53 @@
-# Builds the macOS and Windows apps with the Build workflow and attaches the
-# zips to a GitHub release.
+# Builds the macOS and Windows apps and puts them in a draft GitHub release.
 #
-# Runs when a release is published. It can also be run by hand from the
-# Actions tab to rebuild the files for an existing release.
+# Runs when a version tag (v*) is pushed. It checks the tag against VERSION
+# and CHANGELOG.md, builds both apps with the Build workflow, and creates a
+# draft release with the CHANGELOG.md section as its notes and the zips
+# attached. Publish the draft by hand once it looks right.
+#
+# Drafts are used so the release works with immutable releases: GitHub locks
+# a release's files when it's published, so they must be attached first.
+#
+# It can also be run by hand from the Actions tab to rebuild the files of a
+# release that's still a draft.
 #
 # The apps are not code-signed. See the README for how users open them.
 
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing release tag to build and upload to (for example v0.2.0)"
+        description: "Existing tag to build (for example v1.1.0). Its release must not be published yet."
         required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.event.release.tag_name || inputs.tag }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+
 jobs:
-  check-version:
-    name: Check tag matches VERSION
+  check:
+    name: Check tag, VERSION and changelog
     runs-on: ubuntu-latest
-    env:
-      TAG: ${{ github.event.release.tag_name || inputs.tag }}
 
     steps:
-      - name: Check out the release tag
+      - name: Check out the tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TAG }}
 
       # The tag must be v<VERSION>, optionally followed by a pre-release
       # suffix: VERSION 1.2.0 allows v1.2.0, v1.2.0-beta1 or v1.2.0-rc.2.
-      - name: Compare
+      - name: Compare the tag with VERSION
         run: |
           version=$(sed -nE 's/^project\(WavesTuneRTMidiController VERSION ([0-9.]+).*/\1/p' CMakeLists.txt)
 
@@ -56,32 +64,92 @@ jobs:
               exit 1 ;;
           esac
 
+      - name: Check CHANGELOG.md has notes for the tag
+        run: |
+          if ! .github/scripts/release-notes.sh "$TAG" > /dev/null; then
+            echo "::error file=CHANGELOG.md::CHANGELOG.md needs a \"## ${TAG%%-*}\" section for this release"
+            exit 1
+          fi
+
+      - name: Check the release isn't already published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job's token can't see drafts, so this only finds published releases
+          published=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"$TAG\" and .draft == false) | .id")
+          if [ -n "$published" ]; then
+            echo "::error::Release $TAG is already published, so its files can't be changed. Push a new tag instead."
+            exit 1
+          fi
+
   build:
-    needs: check-version
+    needs: check
     uses: ./.github/workflows/build.yml
     with:
-      ref: ${{ github.event.release.tag_name || inputs.tag }}
-      label: ${{ github.event.release.tag_name || inputs.tag }}
+      ref: ${{ inputs.tag || github.ref_name }}
+      label: ${{ inputs.tag || github.ref_name }}
 
-  upload:
-    name: Upload to the release
+  draft:
+    name: Create the draft release
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write # needed to upload files to the release
-    env:
-      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      contents: write # needed to create the release and attach the zips
 
     steps:
+      - name: Check out the tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+
       - name: Download the zips
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
           merge-multiple: true
+          # The artifacts are the zips themselves (archive: false); without
+          # this, download-artifact would unpack them
+          skip-decompress: true
 
-      - name: Upload to the release
+      - name: Create or update the draft
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Find the zips wherever download-artifact put them
-          find dist -type f -name '*.zip' -print0 | xargs -0 gh release upload "$TAG" --clobber --repo "$GITHUB_REPOSITORY"
+          .github/scripts/release-notes.sh "$TAG" > notes.md
+          mapfile -d '' zips < <(find dist -type f -name '*.zip' -print0)
+
+          if [ "${#zips[@]}" -eq 0 ]; then
+            echo "::error::No zips were downloaded from the build"
+            exit 1
+          fi
+
+          # Tags with a suffix (v1.1.0-rc1) are pre-releases
+          prerelease=()
+          case "$TAG" in *-*) prerelease=(--prerelease) ;; esac
+
+          releases=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"$TAG\") | \"\\(.id) \\(.draft)\"")
+
+          if printf '%s\n' "$releases" | grep -q ' false$'; then
+            echo "::error::Release $TAG was published while this run was building. Its files can't be changed."
+            exit 1
+          fi
+
+          # Replace any earlier draft for this tag, so a rebuild starts clean
+          printf '%s\n' "$releases" | while read -r id draft; do
+            if [ -n "$id" ]; then
+              echo "Deleting the earlier draft $id for $TAG"
+              gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+            fi
+          done
+
+          echo "Creating a draft for $TAG"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+            --title "$TAG" --notes-file notes.md "${prerelease[@]}" "${zips[@]}"
+
+          {
+            echo "### Draft release $TAG is ready"
+            echo
+            echo "Review it on the [Releases](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases) page, then click **Publish release**."
+          } >> "$GITHUB_STEP_SUMMARY"

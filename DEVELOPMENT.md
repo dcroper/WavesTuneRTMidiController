@@ -49,20 +49,24 @@ The [Build workflow](.github/workflows/build.yml) builds the macOS and Windows a
 To build a pull request, add the `build` label to it (create the label once under **Issues > Labels** first). The build shows in the pull request's **Checks**, and its zips are named `pr-<number>`. While the label is on, every new push to the pull request builds again automatically, and cancels a build that's still running. Remove the label to stop. Only people with triage access or higher can add labels, so outside contributors can't start builds. Once you add the label to their pull request, though, their later pushes build automatically.
 
 ## Publishing a release
-The [Release workflow](.github/workflows/release.yml) runs the same Build workflow and attaches the zips to each GitHub release.
+Pushing a version tag starts the [Release workflow](.github/workflows/release.yml). It builds the macOS and Windows apps with the same Build workflow and puts them in a **draft** release, which you publish by hand. Drafts are used so releases work with GitHub's immutable releases, which lock a release's files once it's published.
 
 1. Update `VERSION` in the `project()` line of `CMakeLists.txt`. `VERSION` is numbers and dots only, such as `1.1.0`.
-1. Add a section for the new version to the top of [CHANGELOG.md](CHANGELOG.md), written for people using the app. `git log --format='- %s' <previous tag>..HEAD` lists the commits to start from. Use full URLs for links, so the section can be pasted into the release notes as-is.
-1. Commit, then tag the commit and push both:
+1. Add a `## v1.1.0` section to the top of [CHANGELOG.md](CHANGELOG.md), written for people using the app. `git log --format='- %s' <previous tag>..HEAD` lists the commits to start from. Use full URLs for links, because the workflow uses the section as the release notes.
+1. Commit, merge to `main`, then tag the commit and push the tag:
    ```
    git tag -a v1.1.0 -m "v1.1.0"
-   git push origin main v1.1.0
+   git push origin v1.1.0
    ```
-1. On GitHub, create a release from the tag, and paste the version's CHANGELOG.md section into the release notes. Publish it. For a pre-release you can tag with a suffix, such as `v1.1.0-beta1`.
-1. The workflow first checks that the tag matches `VERSION`. If it doesn't, the run fails before building and nothing is uploaded.
-1. The workflow adds `WavesTuneRTMidiController-<tag>-macOS.zip` and `WavesTuneRTMidiController-<tag>-Windows-x64.zip` to the release after about 10 minutes. Watch its progress on the **Actions** tab.
+1. The workflow checks that the tag matches `VERSION`, that CHANGELOG.md has a section for it, and that the release isn't already published. If any check fails, it stops before building and nothing is created.
+1. After about 10 minutes, a draft release appears on the **Releases** page, with the CHANGELOG.md section as its notes and `WavesTuneRTMidiController-<tag>-macOS.zip` and `WavesTuneRTMidiController-<tag>-Windows-x64.zip` attached. Watch its progress on the **Actions** tab.
+1. Check the draft, then click **Edit** and **Publish release**.
 
-To rebuild the files for an existing release, run the **Release** workflow from the **Actions** tab and enter the release's tag.
+For a pre-release, tag with a suffix such as `v1.1.0-rc1`. The draft is marked as a pre-release and uses the `## v1.1.0` section. When it's good, tag the same commit as `v1.1.0` for the final release.
+
+To rebuild a draft, for example after fixing the workflow, run the **Release** workflow from the **Actions** tab and enter the tag. It replaces the earlier draft. A published release can't be rebuilt; push a new tag instead.
+
+To make published releases unchangeable, turn on immutable releases in the repository's **Settings → General → Releases**.
 
 ## Updating JUCE or the patch
 `CMakeLists.txt` pins both:

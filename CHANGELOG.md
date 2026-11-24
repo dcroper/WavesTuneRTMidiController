@@ -1,6 +1,6 @@
 # Changelog
 
-Each section below is written to be pasted as-is into the GitHub release notes for that version. Links are full URLs so they work there too.
+The Release workflow uses each section below as the GitHub release notes for that version, so links are full URLs.
 
 ## v1.0.0
 
