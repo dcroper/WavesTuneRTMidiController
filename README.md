@@ -43,6 +43,18 @@ xattr -dr com.apple.quarantine /Applications/WavesTuneRTMidiController.app
 1. Run it. If Windows shows **Windows protected your PC**, click **More info**, then **Run anyway**.
 1. In your DAW, enable `WavesTuneRTVirtualMIDI` as a MIDI input.
 
+## Settings
+The app remembers the MIDI Keyboard and MIDI Output you pick, and selects them again the next time it starts. If a remembered device isn't connected, the app falls back to None (keyboard) or `WavesTuneRTVirtualMIDI` (output), and picks your device again once it's back.
+
+Settings are saved in a JSON file:
+
+| Platform | File |
+|---|---|
+| macOS | `~/Library/Application Support/WavesTuneRTMidiController/WavesTuneRTMidiController.json` |
+| Windows | `%APPDATA%\WavesTuneRTMidiController\WavesTuneRTMidiController.json` |
+
+To reset the settings, quit the app and delete the file.
+
 ## Building
 To build the app yourself, or to publish a release, see [DEVELOPMENT.md](DEVELOPMENT.md).
 

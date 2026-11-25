@@ -27,12 +27,13 @@
 #include "MidiSourceSelectComponent.h"
 #include "../Managers/MidiOutputManager.h"
 #include "../Managers/MidiKeyboardManager.h"
+#include "../Settings/SettingsStore.h"
 
 class MainComponent  : public juce::Component
 {
 public:
     //==============================================================================
-    MainComponent();
+    explicit MainComponent(SettingsStore& settings);
     ~MainComponent() override;
 
     //==============================================================================
@@ -44,12 +45,18 @@ private:
     void updateMidiOutput();
     void updateScale();
 
+    void restoreMidiKeyboard();
+    void restoreMidiOutput(bool virtualOutputAvailable);
+    void saveMidiKeyboard();
+    void saveMidiOutput();
+
     //==============================================================================
     MidiSourceSelectComponent midiKeyboardSelect;
     MidiSourceSelectComponent midiOutputSelect;
     ScaleSelector scaleSelector;
     MidiOutputManager midiOutputManager;
     MidiKeyboardManager midiKeyboardManager;
+    SettingsStore& settings;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -39,6 +39,20 @@ Visual Studio 2022 works too, with the `Visual Studio 17 2022` generator.
 
 Build Tools and Visual Studio Community are free for open-source projects like this one.
 
+## Running the unit tests
+The unit tests use JUCE's `UnitTest` and live in `Tests/`. They currently cover the settings code: `AppSettings` JSON, `SavedMidiDevice::findIn`, `DeviceChoices` and `SettingsStore`. They're built along with the app, and the Build workflow runs them on macOS and Windows.
+
+```
+ctest --test-dir build -C Release --output-on-failure
+```
+
+The test program can also be run directly. `--list` shows the test names, and `--name=<test>` runs just one:
+```
+build/WavesTuneRTMidiControllerTests_artefacts/Release/WavesTuneRTMidiControllerTests --name=SettingsStore
+```
+
+To add tests, add a `juce::UnitTest` subclass in the `"ControllerApp"` category to a file in `Tests/`, and list that file and any app sources it needs under `WavesTuneRTMidiControllerTests` in `CMakeLists.txt`. Use `expectEquals` where possible, so a failure shows the actual and expected values. To skip building the tests, configure with `-DWAVES_BUILD_TESTS=OFF`.
+
 ## Testing a build on GitHub
 The [Build workflow](.github/workflows/build.yml) builds the macOS and Windows apps without making a release. It only runs when you start it, or on pull requests that have the `build` label.
 
@@ -52,7 +66,7 @@ To build a pull request, add the `build` label to it (create the label once unde
 Pushing a version tag starts the [Release workflow](.github/workflows/release.yml). It builds the macOS and Windows apps with the same Build workflow and puts them in a **draft** release, which you publish by hand. Drafts are used so releases work with GitHub's immutable releases, which lock a release's files once it's published.
 
 1. Update `VERSION` in the `project()` line of `CMakeLists.txt`. `VERSION` is numbers and dots only, such as `1.1.0`.
-1. Add a `## v1.1.0` section to the top of [CHANGELOG.md](CHANGELOG.md), written for people using the app. `git log --format='- %s' <previous tag>..HEAD` lists the commits to start from. Use full URLs for links, because the workflow uses the section as the release notes.
+1. In [CHANGELOG.md](CHANGELOG.md), rename `## Unreleased` to `## v1.1.0`, or add a `## v1.1.0` section at the top, written for people using the app. `git log --format='- %s' <previous tag>..HEAD` lists the commits to start from. Use full URLs for links, because the workflow uses the section as the release notes.
 1. Commit, merge to `main`, then tag the commit and push the tag:
    ```
    git tag -a v1.1.0 -m "v1.1.0"
@@ -80,6 +94,39 @@ To update either one:
 1. Check the juce-tevirtualmidi [changelog](https://github.com/dcroper/juce-tevirtualmidi/blob/main/CHANGELOG.md) for a release that supports the JUCE version you want.
 1. Change the settings above.
 1. Delete the `build` folder, so CMake downloads and patches the new versions, then build and test on macOS and Windows.
+
+## Adding a setting
+Saved settings live in `Source/Settings/`:
+
+| File | Job |
+|---|---|
+| `AppSettings.h` / `.cpp` | The `AppSettings` struct: every saved setting, with its default, and how it's read from and written to JSON |
+| `SettingsStore.h` / `.cpp` | Loads the JSON file at startup, and saves it about a second after each change and again on quit |
+| `DeviceChoices.h` | Which MIDI devices are selected at startup, and what's saved when one is picked |
+
+The file has a `schemaVersion` in the form `major.minor`. The app's own is `AppSettings::currentSchema`.
+
+| Change | Version bump | Example |
+|---|---|---|
+| Add a field, or a new value for a field | Minor (`1.0` → `1.1`) | A new `scaleRoot` setting, or a new `type` value |
+| Rename or remove a field, or change what a value means | Major (`1.1` → `2.0`) | Renaming `midiOutput` |
+
+| File's `schemaVersion` compared with the app's | What the app does |
+|---|---|
+| Same major, any minor | Reads it. Missing fields get defaults, and unknown fields and values are logged and kept. Saving writes only the settings that changed, and keeps the file's minor version if it's newer. |
+| Newer major | Moves the file to `WavesTuneRTMidiController.json.bak`, and writes a new file in its own version |
+| Older major | Converts it with `AppSettings::migrateToCurrentMajor()`, one major at a time |
+
+To add a setting (a minor change):
+1. Add a member with a default value to `AppSettings`.
+1. Write it in `AppSettings::toVar()`, only when it changed, like the existing ones. Read it in `AppSettings::fromVar()`, and add its key to the list of known keys there.
+1. Increase `AppSettings::currentSchema` by one minor version.
+1. Read it with `settings.get()` and change it with `settings.update(...)`. Saving happens automatically.
+1. Add a check for it to `Tests/SettingsTests.cpp`, for example to the JSON round trip test.
+
+For a major change, increase the major version, set the minor to `0`, and add the conversion from the previous major to `AppSettings::migrateToCurrentMajor()`, with a test.
+
+If the file isn't valid JSON, or its `schemaVersion` isn't valid, the app renames it to `WavesTuneRTMidiController.json.bak` and starts with defaults. If saving fails, the change stays pending and is tried again on the next change or when the app quits.
 
 ## Working on the patch
 To build against a local copy of juce-tevirtualmidi instead of the one on GitHub, start from an empty `build` folder and run:

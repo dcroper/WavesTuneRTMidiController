@@ -50,23 +50,32 @@ MidiOutputManager::~MidiOutputManager()
 {
 }
 
+bool MidiOutputManager::createVirtualOutput(const juce::String& name)
+{
+    virtualOutputName = name;
+    virtualOutput = juce::MidiOutput::createNewDevice(name);
+    return virtualOutput != nullptr;
+}
+
 void MidiOutputManager::setMidiOutput(const juce::MidiDeviceInfo* const deviceInfo)
 {
-    if (deviceInfo != nullptr)
+    // Close the previously selected device, if any. The virtual output stays.
+    activeOutput = nullptr;
+    deviceOutput.reset();
+
+    if (deviceInfo == nullptr)
     {
-        if (deviceInfo->identifier.isNotEmpty())
-        {
-            midiOutput = juce::MidiOutput::openDevice(deviceInfo->identifier);
-        }
-        else
-        {
-            midiOutput = juce::MidiOutput::createNewDevice(deviceInfo->name);
-        }
+        return;
     }
-    else
+
+    if (deviceInfo->identifier.isEmpty() && deviceInfo->name == virtualOutputName)
     {
-        midiOutput.reset();
+        activeOutput = virtualOutput.get();
+        return;
     }
+
+    deviceOutput = juce::MidiOutput::openDevice(deviceInfo->identifier);
+    activeOutput = deviceOutput.get();
 }
 
 void MidiOutputManager::sendScale(const Scale& scale)
@@ -88,7 +97,7 @@ void MidiOutputManager::sendScale(const Scale& scale)
 
 void MidiOutputManager::sendScaleRoot(const ScaleRoot::Letter& scaleRootLetter, const ScaleRoot::Sign& scaleRootSign)
 {
-    if (!midiOutput) return;
+    if (activeOutput == nullptr) return;
 
     static const float midiValPerScale = static_cast<float>(MIDI_MAX_VALUE) / SCALE_ROOT_MAX;
     // Truncation is intended: Waves expects the value rounded down
@@ -101,12 +110,12 @@ void MidiOutputManager::sendScaleRoot(const ScaleRoot::Letter& scaleRootLetter, 
         auto midiMessage = juce::MidiMessage::controllerEvent(scaleRootChannel, scaleRootCCStart + i, midiValue);
         midiBuffer.addEvent(midiMessage, i);
     }
-    midiOutput->sendBlockOfMessagesNow(midiBuffer);
+    activeOutput->sendBlockOfMessagesNow(midiBuffer);
 }
 
 void MidiOutputManager::sendScaleType(const Scale::Type& scaleType)
 {
-    if (!midiOutput) return;
+    if (activeOutput == nullptr) return;
 
     static const float midiValPerType = static_cast<float>(MIDI_MAX_VALUE) / SCALE_TYPE_MAX;
     // Truncation is intended: Waves expects the value rounded down
@@ -119,5 +128,5 @@ void MidiOutputManager::sendScaleType(const Scale::Type& scaleType)
         auto midiMessage = juce::MidiMessage::controllerEvent(scaleTypeChannel, scaleTypeCCStart + i, midiValue);
         midiBuffer.addEvent(midiMessage, i);
     }
-    midiOutput->sendBlockOfMessagesNow(midiBuffer);
+    activeOutput->sendBlockOfMessagesNow(midiBuffer);
 }

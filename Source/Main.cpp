@@ -22,6 +22,7 @@
 
 #include <JuceHeader.h>
 #include "Components/MainComponent.h"
+#include "Settings/SettingsStore.h"
 
 //==============================================================================
 class WavesTuneRTMIDIControllerApplication  : public juce::JUCEApplication
@@ -37,7 +38,7 @@ public:
     //==============================================================================
     void initialise (const juce::String&) override
     {
-        mainWindow.reset (new MainWindow (getApplicationName()));
+        mainWindow.reset (new MainWindow (getApplicationName(), settings));
     }
 
     void shutdown() override
@@ -66,14 +67,14 @@ public:
     class MainWindow    : public juce::DocumentWindow
     {
     public:
-        MainWindow (juce::String name)
+        MainWindow (juce::String name, SettingsStore& appSettings)
             : DocumentWindow (name,
                               juce::Desktop::getInstance().getDefaultLookAndFeel()
                                                           .findColour (juce::ResizableWindow::backgroundColourId),
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new MainComponent(), true);
+            setContentOwned (new MainComponent (appSettings), true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
@@ -104,6 +105,9 @@ public:
     };
 
 private:
+    // Declared before mainWindow, so the window is deleted first and the
+    // settings are saved after the last change
+    SettingsStore settings;
     std::unique_ptr<MainWindow> mainWindow;
 };
 

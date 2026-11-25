@@ -2,6 +2,14 @@
 
 The Release workflow uses each section below as the GitHub release notes for that version, so links are full URLs.
 
+## Unreleased
+
+### New
+- The app remembers the selected MIDI Keyboard and MIDI Output, and selects them again on the next start. See [Settings](https://github.com/dcroper/WavesTuneRTMidiController#settings).
+
+### Changed
+- The `WavesTuneRTVirtualMIDI` output now stays available the whole time the app is running. Before, choosing another MIDI Output removed it until you switched back, so your DAW lost the connection.
+
 ## v1.0.0
 
 ### New

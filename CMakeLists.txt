@@ -58,7 +58,9 @@ target_sources(WavesTuneRTMidiController PRIVATE
     Source/Constants/ScaleConstants.cpp
     Source/Fonts/Fonts.cpp
     Source/Managers/MidiKeyboardManager.cpp
-    Source/Managers/MidiOutputManager.cpp)
+    Source/Managers/MidiOutputManager.cpp
+    Source/Settings/AppSettings.cpp
+    Source/Settings/SettingsStore.cpp)
 
 juce_add_binary_data(WavesTuneRTMidiControllerData SOURCES
     Source/iconLarge.png
@@ -86,3 +88,39 @@ target_link_libraries(WavesTuneRTMidiController
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+#===============================================================================
+# Unit tests (run with: ctest --test-dir build -C Release --output-on-failure)
+
+option(WAVES_BUILD_TESTS "Build the unit tests" ON)
+
+if(WAVES_BUILD_TESTS)
+    enable_testing()
+
+    juce_add_console_app(WavesTuneRTMidiControllerTests
+        PRODUCT_NAME "WavesTuneRTMidiControllerTests"
+        VERSION      ${PROJECT_VERSION})
+
+    juce_generate_juce_header(WavesTuneRTMidiControllerTests)
+
+    target_sources(WavesTuneRTMidiControllerTests PRIVATE
+        Tests/Main.cpp
+        Tests/SettingsTests.cpp
+        Tests/DeviceChoicesTests.cpp
+        Source/Settings/AppSettings.cpp
+        Source/Settings/SettingsStore.cpp)
+
+    target_compile_definitions(WavesTuneRTMidiControllerTests PRIVATE
+        JUCE_USE_CURL=0
+        JUCE_WEB_BROWSER=0
+        JUCE_MODAL_LOOPS_PERMITTED=1) # lets tests run the message loop, so timers fire
+
+    target_link_libraries(WavesTuneRTMidiControllerTests
+        PRIVATE
+            juce::juce_audio_devices
+        PUBLIC
+            juce::juce_recommended_config_flags
+            juce::juce_recommended_warning_flags)
+
+    add_test(NAME WavesTuneUnitTests COMMAND WavesTuneRTMidiControllerTests)
+endif()

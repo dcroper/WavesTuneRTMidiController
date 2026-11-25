@@ -79,6 +79,10 @@ jobs:
         if: runner.os == 'macOS'
         run: cmake --build build --config Release
 
+      - name: Test (macOS)
+        if: runner.os == 'macOS'
+        run: ctest --test-dir build -C Release --output-on-failure
+
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -100,6 +104,10 @@ jobs:
       - name: Build (Windows)
         if: runner.os == 'Windows'
         run: cmake --build build --config Release
+
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        run: ctest --test-dir build -C Release --output-on-failure
 
       - name: Package (Windows)
         if: runner.os == 'Windows'

@@ -22,6 +22,7 @@
 
 #include "../Constants/ScaleConstants.h"
 #include "MainComponent.h"
+#include "../Settings/DeviceChoices.h"
 
 //==============================================================================
 static const juce::MidiDeviceInfo VIRTUAL_MIDI_OUTPUT_DEVICE("WavesTuneRTVirtualMIDI", "");
@@ -33,17 +34,23 @@ static const juce::MidiDeviceInfo VIRTUAL_MIDI_OUTPUT_DEVICE("WavesTuneRTVirtual
  static const juce::String VIRTUAL_MIDI_UNAVAILABLE_TEXT("WavesTuneRTVirtualMIDI (unavailable)");
 #endif
 
-MainComponent::MainComponent()
+MainComponent::MainComponent(SettingsStore& settingsToUse)
+  : settings(settingsToUse)
 {
     addAndMakeVisible(midiKeyboardSelect);
     midiKeyboardSelect.setLabelText("MIDI Keyboard:");
     midiKeyboardSelect.addNoneItem();
     midiKeyboardSelect.addMidiDevices(juce::MidiInput::getAvailableDevices());
-    midiKeyboardSelect.onChange = [this] { midiKeyboardManager.setMidiInput(midiKeyboardSelect.getSelectedDevice().get()); };
+    restoreMidiKeyboard();
+    midiKeyboardSelect.onChange = [this]
+    {
+        midiKeyboardManager.setMidiInput(midiKeyboardSelect.getSelectedDevice().get());
+        saveMidiKeyboard();
+    };
 
-    // Open the virtual output first, to find out whether it can be created
-    midiOutputManager.setMidiOutput(&VIRTUAL_MIDI_OUTPUT_DEVICE);
-    const bool virtualOutputAvailable = midiOutputManager.hasMidiOutput();
+    // Create the virtual output once. It stays until the app quits; picking it
+    // in the list only chooses where messages go.
+    const bool virtualOutputAvailable = midiOutputManager.createVirtualOutput(VIRTUAL_MIDI_OUTPUT_DEVICE.name);
 
     addAndMakeVisible(midiOutputSelect);
     midiOutputSelect.setLabelText("MIDI Output:");
@@ -54,7 +61,6 @@ MainComponent::MainComponent()
     if (virtualOutputAvailable)
     {
         midiOutputSelect.addMidiDevices(midiOutputDevices);
-        midiOutputSelect.setSelectedDevice(VIRTUAL_MIDI_OUTPUT_DEVICE, juce::dontSendNotification);
     }
     else
     {
@@ -64,7 +70,12 @@ MainComponent::MainComponent()
         midiOutputSelect.setDeviceUnavailable(VIRTUAL_MIDI_OUTPUT_DEVICE, VIRTUAL_MIDI_UNAVAILABLE_TEXT);
     }
 
-    midiOutputSelect.onChange = [this] { updateMidiOutput(); };
+    restoreMidiOutput(virtualOutputAvailable);
+    midiOutputSelect.onChange = [this]
+    {
+        updateMidiOutput();
+        saveMidiOutput();
+    };
     
     addAndMakeVisible(scaleSelector);
     scaleSelector.onScaleTypeChange = [this] { updateScale(); };
@@ -113,6 +124,46 @@ void MainComponent::updateMidiOutput()
 {
     midiOutputManager.setMidiOutput(midiOutputSelect.getSelectedDevice().get());
     updateScale();
+}
+
+//==============================================================================
+// The rules are in DeviceChoices, which has tests. Restoring doesn't save, so a
+// fallback for a missing device isn't remembered.
+
+void MainComponent::restoreMidiKeyboard()
+{
+    if (auto device = DeviceChoices::keyboardToRestore(settings.get().midiKeyboard, juce::MidiInput::getAvailableDevices()))
+    {
+        midiKeyboardSelect.setSelectedDevice(*device, juce::dontSendNotification);
+        midiKeyboardManager.setMidiInput(&*device);
+    }
+}
+
+void MainComponent::restoreMidiOutput(bool virtualOutputAvailable)
+{
+    const auto device = DeviceChoices::outputToRestore(settings.get().midiOutput,
+                                                       juce::MidiOutput::getAvailableDevices(),
+                                                       VIRTUAL_MIDI_OUTPUT_DEVICE,
+                                                       virtualOutputAvailable);
+
+    if (device.has_value())
+    {
+        midiOutputSelect.setSelectedDevice(*device, juce::dontSendNotification);
+    }
+
+    midiOutputManager.setMidiOutput(device.has_value() ? &*device : nullptr);
+}
+
+void MainComponent::saveMidiKeyboard()
+{
+    const auto saved = DeviceChoices::toSave(midiKeyboardSelect.getSelectedDevice().get(), VIRTUAL_MIDI_OUTPUT_DEVICE);
+    settings.update([&](AppSettings& s) { s.midiKeyboard = saved; });
+}
+
+void MainComponent::saveMidiOutput()
+{
+    const auto saved = DeviceChoices::toSave(midiOutputSelect.getSelectedDevice().get(), VIRTUAL_MIDI_OUTPUT_DEVICE);
+    settings.update([&](AppSettings& s) { s.midiOutput = saved; });
 }
 
 void MainComponent::updateScale()
